@@ -39,10 +39,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         PhotonNetwork.JoinRoom(roomName);
     }
 
+    [PunRPC] // changes scene using Photon's system
     public void ChangeScene (string sceneName)
     {
         PhotonNetwork.LoadLevel(sceneName);
     }
+
     void Update()
     {
         
