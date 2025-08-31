@@ -9,8 +9,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     void Awake()
     {
-         if (instance != null && instance != this) //if an instance already exists
-                                                   //and it's not this one- destroy us
+        if (instance != null && instance != this) //if an instance already exists
+                                                  //and it's not this one- destroy us
             gameObject.SetActive(false);
         else
         {
@@ -31,10 +31,15 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     void Start()
     {
-        PhotonNetwork.ConnectUsingSettings();        
+        PhotonNetwork.ConnectUsingSettings();
     }
 
-    public void CreateRoom (string roomName)
+    public void CreateRoom(string roomName)
+    {
+        PhotonNetwork.JoinRoom(roomName);
+    }
+
+    public void JoinRoom(string roomName)
     {
         PhotonNetwork.JoinRoom(roomName);
     }
