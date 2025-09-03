@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -15,7 +17,7 @@ public class Menu : MonoBehaviourPunCallbacks //"PunCallbacks" necessary to get 
     public Button joinRoomButton;   //need on the main screen
 
     [Header("Lobby Screen")]
-    public TextMeshPro playerListText;
+    public TextMeshProUGUI playerListText;
     public Button startGameButton;
 
     void Start()
@@ -24,7 +26,7 @@ public class Menu : MonoBehaviourPunCallbacks //"PunCallbacks" necessary to get 
         joinRoomButton.interactable = false; 
     }
     
-    public override void OnConnectedToMaster () //called when connected to master server
+    public override void OnConnectedToMaster() //called when connected to master server
     {
         createRoomButton.interactable = true; //enable the buttons
         joinRoomButton.interactable = true;
@@ -38,7 +40,7 @@ public class Menu : MonoBehaviourPunCallbacks //"PunCallbacks" necessary to get 
         screen.SetActive(true); //enable requested screen
     }
 
-    public void OnCreateRoomButton (TMP_InputField roomNameInput)
+    public void OnCreateRoomButton(TMP_InputField roomNameInput)
     {
         NetworkManager.instance.CreateRoom(roomNameInput.text);
     }
@@ -54,14 +56,19 @@ public class Menu : MonoBehaviourPunCallbacks //"PunCallbacks" necessary to get 
     }
 
     public override void OnJoinedRoom()
-    {                           //check for OnJoinedRoom callback when we create/join a room
-        SetScreen(lobbyScreen); //then switch over to lobby screen
-        GetComponent<PhotonView>(). //grab PhotonView attached to the same GameObjet as the menu script
-            RPC("UpdateLobbUI", RpcTarget.All); //tells all clients to run your [PunRPC] UpdateLobbyUI
+    {   SetScreen(lobbyScreen);
+        photonView.RPC("UpdateLobbyUI", RpcTarget.All);
     }
 
-    [PunRPC]
-    public void UpdateLobbyUI ()
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+                         //we don't RPC it like when we join lobby
+        UpdateLobbyUI(); //becuase OnJoinRoom is only called for the client that just joined
+                         //OnPlayerLeftRoom gets called for all clients in the room (we dont need to RPC)
+    }
+
+    [PunRPC] //called whenever someone joins/leaves the lobby
+    public void UpdateLobbyUI()
     {
         playerListText.text = "";
         foreach (Player player in PhotonNetwork.PlayerList) //display all players currently in lobby
@@ -74,12 +81,6 @@ public class Menu : MonoBehaviourPunCallbacks //"PunCallbacks" necessary to get 
             startGameButton.interactable = false;
     }
 
-    public override void OnPlayerLeftRoom(Player otherPlayer)
-    {
-                         //we don't RPC it like when we join lobby
-        UpdateLobbyUI(); //becuase OnJoinRoom is only called for the client that just joined
-                         //OnPlayerLeftRoom gets called for all clients in the room (we dont need to RPC)
-    }
 
     public void OnLeaveLobbyButton ()
     {
@@ -89,13 +90,6 @@ public class Menu : MonoBehaviourPunCallbacks //"PunCallbacks" necessary to get 
 
     public void OnStartGameButton ()
     {
-        NetworkManager.instance.photonView.RPC
-            ("Change Scene", RpcTarget.All, "Game");
-    }
-
-
-    void Update()
-    {
-        
+        NetworkManager.instance.photonView.RPC("Change Scene", RpcTarget.All, "Game");
     }
 }

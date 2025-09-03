@@ -5,10 +5,10 @@ using Photon.Pun;
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
-    public static NetworkManager instance;
+    public static NetworkManager instance; //instance
 
-    void Awake()
-    {
+    private void Awake()
+    {                               
         if (instance != null && instance != this) //if an instance already exists
                                                   //and it's not this one- destroy us
             gameObject.SetActive(false);
@@ -18,40 +18,38 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             DontDestroyOnLoad(gameObject);
         }
     }
-
-    public override void OnConnectedToMaster()
-    {
-        CreateRoom("testroom");
-    }
-
-    public override void OnCreatedRoom()
-    {
-        Debug.Log("Created room: " + PhotonNetwork.CurrentRoom.Name);
-    }
-
-    void Start()
+    
+    private void Start()
     {
         PhotonNetwork.ConnectUsingSettings();
     }
 
     public void CreateRoom(string roomName)
     {
-        PhotonNetwork.JoinRoom(roomName);
+        PhotonNetwork.CreateRoom(roomName);
     }
 
     public void JoinRoom(string roomName)
     {
         PhotonNetwork.JoinRoom(roomName);
     }
+                
+    [PunRPC] //changes scene using Photon's system
+             //this is an RPC because when the host starts the game,
+             //they will tell everyone else in the room to call this function
 
-    [PunRPC] // changes scene using Photon's system
     public void ChangeScene (string sceneName)
     {
         PhotonNetwork.LoadLevel(sceneName);
     }
 
-    void Update()
+    public override void OnConnectedToMaster()
     {
-        
+        Debug.Log("Connected to Master Server"); //CreateRoom("testroom");
+    }
+
+    public override void OnCreatedRoom()
+    {
+        Debug.Log("Created room: " + PhotonNetwork.CurrentRoom.Name);
     }
 }
